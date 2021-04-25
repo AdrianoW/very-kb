@@ -1,5 +1,3 @@
-const { func } = require("prop-types");
-
 var record = false;
 var training_points = [];
 var training_labels = [];
@@ -115,6 +113,11 @@ function phraseText(text) {
     bt.textContent = bt.textContent + ' ' + text;
 };
 
+function clearPhraseText(text) {
+    var bt = document.getElementById('phrase');
+    bt.textContent = '';
+};
+
 function drawLetterButtons() {
     let btGroups = [
         ['a', 'g', 's', 'r', 'h', 'x'],
@@ -122,7 +125,23 @@ function drawLetterButtons() {
         ['i', 'q', 'p', 'b', 'n'],
         ['o', 'w', 'j', 'z', 't'],
         ['u', 'm', 'k', 'v', 'l'],
-        ["Accept"]
+        ["Esc. Palavra"]
+    ];
+
+    // create the initial buttons
+    for (var i = 0; i < 6; i++) {
+        buttonText('bt' + i, btGroups[i].toString());
+    }
+};
+
+function drawNoWordButtons() {
+    let btGroups = [
+        [''],
+        [''],
+        [''],
+        ['Limpar Frase'],
+        ['Limpar Palavra'],
+        ["Voltar"]
     ];
 
     // create the initial buttons
@@ -133,9 +152,10 @@ function drawLetterButtons() {
 
 function drawWordButtons(pWords) {
     // create the initial buttons
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 5; i++) {
         buttonText('bt' + i, pWords[i]);
     }
+    buttonText('bt5', 'Retornar');
 };
 
 function init() {
