@@ -2,7 +2,8 @@ const videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 const pred_label = ['Nothing', 'down', 'left', 'right', 'up'];
-const model = await tf.loadLayersModel('http://127.0.0.1:5500/models/modeljs.json/model.json');
+const fpsInfo = document.querySelector("#fps-info")
+    // const model = await tf.loadLayersModel('http://127.0.0.1:5500/models/modeljs.json/model.json');
 
 // stop the logging
 console.log = function() {};
@@ -293,13 +294,41 @@ faceDetection.setOptions({
 });
 faceDetection.onResults(onResults);
 
-// for every frame of the camera do something
-const camera = new Camera(videoElement, {
-    onFrame: async() => {
-        await faceDetection.send({ image: videoElement });
-    },
-    width: 640,
-    height: 480,
-    frameRate: { max: 10 }
-});
-camera.start();
+// // for every frame of the camera do something
+// const camera = new Camera(videoElement, {
+//     onFrame: async() => {
+//         await faceDetection.send({ image: videoElement });
+//     },
+//     width: 640,
+//     height: 480,
+//     frameRate: { max: 10 }
+// });
+// camera.start();
+
+// ask for the browser's video and add to the video element as source
+navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: "user", width: 640, height: 480, frameRate: 15 }
+    })
+    .then((stream) => {
+        videoElement.srcObject = stream;
+    })
+
+let paintCount = 0;
+let startTime = 0.0;
+// from here view-source:https://requestvideoframecallback.glitch.me/
+async function updateCanvas(now, metadata) {
+    if (startTime === 0.0) {
+        startTime = now;
+    }
+    await faceDetection.send({ image: videoElement });
+    // canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+    const elapsed = (now - startTime) / 1000.0;
+    const fps = (++paintCount / elapsed).toFixed(3);
+    fpsInfo.innerText = !isFinite(fps) ? 0 : fps;
+    // metadataInfo.innerText = JSON.stringify(metadata, null, 2);
+
+    videoElement.requestVideoFrameCallback(updateCanvas);
+};
+videoElement.requestVideoFrameCallback(updateCanvas);
